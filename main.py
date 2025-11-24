@@ -1,29 +1,24 @@
-from fastapi import FastAPI, HTTPException
+import os
+from fastapi import FastAPI
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from dotenv import load_dotenv
-load_dotenv()
-import os
 
-# ---------------------------
-# Database connection
-# ---------------------------
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")  # Railway sẽ inject trực tiếp
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set!")
+
 engine = create_engine(DATABASE_URL, echo=False, future=True)
 
 def execute_query(query: str, params: dict = None):
-    """
-    Thực thi query SQL và trả về list of dict
-    """
     try:
         with engine.connect() as conn:
             result = conn.execute(text(query), params or {})
-            # Chuyển kết quả thành list of dict
-            rows = [dict(row) for row in result.mappings()]
-        return rows
+            return [dict(row) for row in result.mappings()]
     except SQLAlchemyError as e:
         print("Database error:", e)
         return []
+
+app = FastAPI(title="Gold Layer API", version="1.0")
 
 # ---------------------------
 # FastAPI app
