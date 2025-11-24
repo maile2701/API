@@ -18,8 +18,6 @@ def execute_query(query: str, params: dict = None):
         print("Database error:", e)
         return []
 
-app = FastAPI(title="Gold Layer API", version="1.0")
-
 # ---------------------------
 # FastAPI app
 # ---------------------------
