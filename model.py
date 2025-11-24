@@ -3,6 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+class City(Base):
+    __tablename__ = "city"
+    __table_args__ = {"schema": "bronze"}  
+    city_id = Column(Integer, primary_key=True)
+    city_name = Column(String)
+    lat = Column(Float)
+    lng = Column(Float)
 
 # ============================================================
 # DIMENSIONS
