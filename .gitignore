@@ -5,5 +5,3 @@ __pycache__/
 *.pyd
 venv/
 
-# Environment
-.env
