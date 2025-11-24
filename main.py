@@ -98,6 +98,23 @@ def get_event_media():
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
+# BRONZE SCHEMA
+# ---------------------------
+@app.get("/cities")
+def get_cities():
+    query = "SELECT * FROM bronze.city;"
+    data = execute_query(query)
+    return {"count": len(data), "data": data}
+
+@app.get("/cities/{city_id}")
+def get_city_by_id(city_id: str):
+    query = "SELECT * FROM bronze.city WHERE city_id = :city_id;"
+    data = execute_query(query, {"city_id": city_id})
+    if not data:
+        raise HTTPException(status_code=404, detail="City not found")
+    return {"count": len(data), "data": data}
+
+
 # ---------------------------
 # FILTER EXAMPLES
 # ---------------------------
