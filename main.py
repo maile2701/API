@@ -2,8 +2,9 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 from dotenv import load_dotenv
-load_dotenv()
 import os
+
+load_dotenv()
 
 # ---------------------------
 # Database connection
@@ -18,7 +19,6 @@ def execute_query(query: str, params: dict = None):
     try:
         with engine.connect() as conn:
             result = conn.execute(text(query), params or {})
-            # Chuyển kết quả thành list of dict
             rows = [dict(row) for row in result.mappings()]
         return rows
     except SQLAlchemyError as e:
@@ -28,7 +28,7 @@ def execute_query(query: str, params: dict = None):
 # ---------------------------
 # FastAPI app
 # ---------------------------
-app = FastAPI(title="Gold Layer API", version="1.0")
+app = FastAPI(title="Gold Layer API", version="1.1")
 
 # ---------------------------
 # DIMENSIONS
@@ -54,11 +54,11 @@ def get_persons():
     return {"count": len(data), "data": data}
 
 @app.get("/persons/{person_id}")
-def get_location_by_id(person_id: str):
+def get_person_by_id(person_id: str):
     query = "SELECT * FROM gold.dim_person WHERE person_id = :person_id;"
     data = execute_query(query, {"person_id": person_id})
     if not data:
-        raise HTTPException(status_code=404, detail="Location not found")
+        raise HTTPException(status_code=404, detail="Person not found")
     return {"count": len(data), "data": data}
 
 @app.get("/media")
@@ -68,15 +68,17 @@ def get_media():
     return {"count": len(data), "data": data}
 
 @app.get("/event_media_flat")
-def get_media():
+def get_event_media_flat():
     query = "SELECT * FROM gold.event_media_flat;"
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/event_media_flat/event_id")
-def get_media():
-    query = "SELECT * FROM gold.event_media_flat;"
-    data = execute_query(query)
+@app.get("/event_media_flat/{event_id}")
+def get_event_media_flat_by_id(event_id: str):
+    query = "SELECT * FROM gold.event_media_flat WHERE event_id = :event_id;"
+    data = execute_query(query, {"event_id": event_id})
+    if not data:
+        raise HTTPException(status_code=404, detail="Event not found")
     return {"count": len(data), "data": data}
 
 # ---------------------------
@@ -89,12 +91,31 @@ def get_events():
     return {"count": len(data), "data": data}
 
 @app.get("/events/{event_id}")
-def get_event_by_id(event_id: str):
-    query = "SELECT * FROM gold.fact_event WHERE event_id = :event_id;"
+def get_event_detail(event_id: str):
+    """
+    Lấy chi tiết event + tất cả ảnh của event đó
+    """
+    query = """
+        SELECT fe.*, emf.media_url
+        FROM gold.fact_event fe
+        LEFT JOIN gold.event_media_flat emf
+        ON fe.event_id = emf.event_id
+        WHERE fe.event_id = :event_id;
+    """
     data = execute_query(query, {"event_id": event_id})
     if not data:
         raise HTTPException(status_code=404, detail="Event not found")
-    return {"count": len(data), "data": data}
+    
+    # Gom tất cả media_url vào 1 list
+    event_info = {
+        "event_id": data[0]["event_id"],
+        "event_name": data[0].get("event_name"),
+        "event_date": data[0].get("event_date"),
+        "description": data[0].get("description"),
+        "media_urls": [row["media_url"] for row in data if row["media_url"]]
+    }
+    
+    return event_info
 
 # ---------------------------
 # BRIDGES
@@ -138,4 +159,3 @@ def get_media_by_event(event_id: str):
     query = "SELECT * FROM gold.dim_media WHERE event_id = :event_id;"
     data = execute_query(query, {"event_id": event_id})
     return {"count": len(data), "data": data}
-
