@@ -1,19 +1,26 @@
-import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
-DATABASE_URL = os.getenv("DATABASE_URL")  # Railway sẽ inject trực tiếp
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not set!")
-
+# ---------------------------
+# Database connection
+# ---------------------------
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL, echo=False, future=True)
 
 def execute_query(query: str, params: dict = None):
+    """
+    Thực thi query SQL và trả về list of dict
+    """
     try:
         with engine.connect() as conn:
             result = conn.execute(text(query), params or {})
-            return [dict(row) for row in result.mappings()]
+            # Chuyển kết quả thành list of dict
+            rows = [dict(row) for row in result.mappings()]
+        return rows
     except SQLAlchemyError as e:
         print("Database error:", e)
         return []
@@ -98,23 +105,6 @@ def get_event_media():
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-# BRONZE SCHEMA
-# ---------------------------
-@app.get("/cities")
-def get_cities():
-    query = "SELECT * FROM bronze.city;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
-
-@app.get("/cities/{city_id}")
-def get_city_by_id(city_id: str):
-    query = "SELECT * FROM bronze.city WHERE city_id = :city_id;"
-    data = execute_query(query, {"city_id": city_id})
-    if not data:
-        raise HTTPException(status_code=404, detail="City not found")
-    return {"count": len(data), "data": data}
-
-
 # ---------------------------
 # FILTER EXAMPLES
 # ---------------------------
@@ -136,3 +126,10 @@ def get_locations_by_city(city_id: str):
     query = "SELECT * FROM gold.dim_location WHERE city_id = :city_id;"
     data = execute_query(query, {"city_id": city_id})
     return {"count": len(data), "data": data}
+
+@app.get("/media/event/{event_id}")
+def get_media_by_event(event_id: str):
+    query = "SELECT * FROM gold.dim_media WHERE event_id = :event_id;"
+    data = execute_query(query, {"event_id": event_id})
+    return {"count": len(data), "data": data}
+
