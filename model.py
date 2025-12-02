@@ -3,13 +3,6 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-class City(Base):
-    __tablename__ = "city"
-    __table_args__ = {"schema": "bronze"}  
-    city_id = Column(Integer, primary_key=True)
-    city_name = Column(String)
-    lat = Column(Float)
-    lng = Column(Float)
 
 # ============================================================
 # DIMENSIONS
@@ -51,6 +44,8 @@ class DimMedia(Base):
     media_id = Column(String)
     media = Column(String)
     media_type = Column(String)
+    event_id = Column(String)                     
+    event_date = Column(String)
 
 
 # ============================================================
