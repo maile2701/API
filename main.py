@@ -73,6 +73,12 @@ def get_media():
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
+@app.get("/event_media_flat/event_id")
+def get_media():
+    query = "SELECT * FROM gold.event_media_flat;"
+    data = execute_query(query)
+    return {"count": len(data), "data": data}
+
 # ---------------------------
 # FACTS
 # ---------------------------
