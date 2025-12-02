@@ -33,103 +33,44 @@ app = FastAPI(title="Gold Layer API", version="1.0")
 # ---------------------------
 # DIMENSIONS
 # ---------------------------
-@app.get("/locations")
-def get_locations():
-    query = "SELECT * FROM gold.dim_location;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
+DIM_VIEWS = [
+    "dim_location",
+    "dim_media",
+    "dim_person",
+    "event_flat",
+    "event_media_flat",
+    "person_event_flat"
+]
 
-@app.get("/locations/{location_id}")
-def get_location_by_id(location_id: str):
-    query = "SELECT * FROM gold.dim_location WHERE location_id = :location_id;"
-    data = execute_query(query, {"location_id": location_id})
-    if not data:
-        raise HTTPException(status_code=404, detail="Location not found")
-    return {"count": len(data), "data": data}
+for dim in DIM_VIEWS:
+    endpoint = f"/{dim}"
 
-@app.get("/persons")
-def get_persons():
-    query = "SELECT * FROM gold.dim_person;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
+    def make_dim_endpoint(view_name):
+        def dim_endpoint():
+            query = f"SELECT * FROM gold.{view_name};"
+            data = execute_query(query)
+            return {"count": len(data), "data": data}
+        return dim_endpoint
 
-@app.get("/persons/{person_id}")
-def get_location_by_id(person_id: str):
-    query = "SELECT * FROM gold.dim_person WHERE person_id = :person_id;"
-    data = execute_query(query, {"person_id": person_id})
-    if not data:
-        raise HTTPException(status_code=404, detail="Location not found")
-    return {"count": len(data), "data": data}
-
-@app.get("/media")
-def get_media():
-    query = "SELECT * FROM gold.dim_media;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
-
-@app.get("/event_media_flat")
-def get_media():
-    query = "SELECT * FROM gold.event_media_flat;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
+    app.get(endpoint)(make_dim_endpoint(dim))
 
 # ---------------------------
 # FACTS
 # ---------------------------
-@app.get("/events")
-def get_events():
-    query = "SELECT * FROM gold.fact_event;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
+FACT_VIEWS = [
+    "fact_event",
+    "fact_event_media",
+    "fact_person_event"
+]
 
-@app.get("/events/{event_id}")
-def get_event_by_id(event_id: str):
-    query = "SELECT * FROM gold.fact_event WHERE event_id = :event_id;"
-    data = execute_query(query, {"event_id": event_id})
-    if not data:
-        raise HTTPException(status_code=404, detail="Event not found")
-    return {"count": len(data), "data": data}
+for fact in FACT_VIEWS:
+    endpoint = f"/{fact}"
 
-# ---------------------------
-# BRIDGES
-# ---------------------------
-@app.get("/person-events")
-def get_person_events():
-    query = "SELECT * FROM gold.fact_person_event;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
+    def make_fact_endpoint(view_name):
+        def fact_endpoint():
+            query = f"SELECT * FROM gold.{view_name};"
+            data = execute_query(query)
+            return {"count": len(data), "data": data}
+        return fact_endpoint
 
-@app.get("/event-media")
-def get_event_media():
-    query = "SELECT * FROM gold.fact_event_media;"
-    data = execute_query(query)
-    return {"count": len(data), "data": data}
-
-# ---------------------------
-# FILTER EXAMPLES
-# ---------------------------
-@app.get("/events/location/{location_id}")
-def get_events_by_location(location_id: str):
-    query = """
-        SELECT fe.*, dl.location_name
-        FROM gold.fact_event fe
-        LEFT JOIN gold.dim_location dl ON fe.location_key = dl.location_key
-        WHERE dl.location_id = :location_id;
-    """
-    data = execute_query(query, {"location_id": location_id})
-    if not data:
-        raise HTTPException(status_code=404, detail="No events found for this location")
-    return {"count": len(data), "data": data}
-
-@app.get("/locations/city/{city_id}")
-def get_locations_by_city(city_id: str):
-    query = "SELECT * FROM gold.dim_location WHERE city_id = :city_id;"
-    data = execute_query(query, {"city_id": city_id})
-    return {"count": len(data), "data": data}
-
-@app.get("/media/event/{event_id}")
-def get_media_by_event(event_id: str):
-    query = "SELECT * FROM gold.dim_media WHERE event_id = :event_id;"
-    data = execute_query(query, {"event_id": event_id})
-    return {"count": len(data), "data": data}
-
+    app.get(endpoint)(make_fact_endpoint(fact))
