@@ -33,13 +33,13 @@ app = FastAPI(title="Gold Layer API", version="1.0")
 # ---------------------------
 # DIMENSIONS
 # ---------------------------
-@app.get("/location")
+@app.get("/locations")
 def get_locations():
     query = "SELECT * FROM gold.dim_site;"
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/location/{site_id}")
+@app.get("/locations/{site_id}")
 def get_location_by_id(site_id: str):
     query = "SELECT * FROM gold.dim_site WHERE site_id = :site_id;"
     data = execute_query(query, {"site_id": site_id})
@@ -47,13 +47,13 @@ def get_location_by_id(site_id: str):
         raise HTTPException(status_code=404, detail="Location not found")
     return {"count": len(data), "data": data}
 
-@app.get("/person")
+@app.get("/persons")
 def get_persons():
     query = "SELECT * FROM gold.dim_person;"
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/person/{person_id}")
+@app.get("/persons/{person_id}")
 def get_location_by_id(person_id: str):
     query = "SELECT * FROM gold.dim_person WHERE person_id = :person_id;"
     data = execute_query(query, {"person_id": person_id})
@@ -122,7 +122,7 @@ def get_events_by_location(site_id: str):
         raise HTTPException(status_code=404, detail="No events found for this location")
     return {"count": len(data), "data": data}
 
-@app.get("/location/city/{city_id}")
+@app.get("/locations/city/{city_id}")
 def get_locations_by_city(city_id: str):
     query = "SELECT * FROM gold.dim_location WHERE city_id = :city_id;"
     data = execute_query(query, {"city_id": city_id})
