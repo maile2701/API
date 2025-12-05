@@ -33,16 +33,16 @@ app = FastAPI(title="Gold Layer API", version="1.0")
 # ---------------------------
 # DIMENSIONS
 # ---------------------------
-@app.get("/locations")
+@app.get("/sites")
 def get_locations():
-    query = "SELECT * FROM gold.dim_location;"
+    query = "SELECT * FROM gold.dim_site;"
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/locations/{location_id}")
-def get_location_by_id(location_id: str):
-    query = "SELECT * FROM gold.dim_location WHERE location_id = :location_id;"
-    data = execute_query(query, {"location_id": location_id})
+@app.get("/sites/{site_id}")
+def get_location_by_id(site_id: str):
+    query = "SELECT * FROM gold.dim_site WHERE site_id = :site_id;"
+    data = execute_query(query, {"site_id": site_id})
     if not data:
         raise HTTPException(status_code=404, detail="Location not found")
     return {"count": len(data), "data": data}
@@ -82,26 +82,27 @@ def get_events():
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/events/{event_id}")
-def get_event_by_id(event_id: str):
-    query = "SELECT * FROM gold.fact_event WHERE event_id = :event_id;"
-    data = execute_query(query, {"event_id": event_id})
-    if not data:
-        raise HTTPException(status_code=404, detail="Event not found")
+@app.get("/event_media")
+def get_events():
+    query = "SELECT * FROM gold.fact_event_media;"
+    data = execute_query(query)
     return {"count": len(data), "data": data}
 
-# ---------------------------
-# BRIDGES
-# ---------------------------
-@app.get("/person-events")
-def get_person_events():
+@app.get("/person_event")
+def get_events():
     query = "SELECT * FROM gold.fact_person_event;"
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/event-media")
-def get_event_media():
-    query = "SELECT * FROM gold.fact_event_media;"
+@app.get("/event_media_flat")
+def get_event_media_flat():
+    query = "SELECT * FROM gold.event_media_flat;"
+    data = execute_query(query)
+    return {"count": len(data), "data": data}
+
+@app.get("/event_full_flat")
+def get_event_full_flat():
+    query = "SELECT * FROM gold.event_full_flat;"
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
