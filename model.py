@@ -60,6 +60,16 @@ class DimMedia(Base):
     # Relationships
     event_media = relationship("FactEventMedia", back_populates="media", lazy="selectin")
 
+
+class SilverCity(Base):
+    __tablename__ = "city_cleaned"
+    __table_args__ = {"schema": "silver"}
+
+    city_id = Column(String, primary_key=True, index=True)
+    city_name = Column(String, index=True)
+    lat = Column(Float)
+    lng = Column(Float)
+
 # ============================================================
 # FACT TABLES
 # ============================================================
