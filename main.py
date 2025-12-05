@@ -54,7 +54,7 @@ def get_persons():
     return {"count": len(data), "data": data}
 
 @app.get("/persons/{person_id}")
-def get_location_by_id(person_id: str):
+def get_persons_by_id(person_id: str):
     query = "SELECT * FROM gold.dim_person WHERE person_id = :person_id;"
     data = execute_query(query, {"person_id": person_id})
     if not data:
@@ -67,16 +67,15 @@ def get_media():
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/event_media_flat")
-def get_media():
-    query = "SELECT * FROM gold.event_media_flat;"
+@app.get("/cities")
+def get_cities():
+    query = "SELECT * FROM silver.city_cleaned;"
     data = execute_query(query)
-    return {"count": len(data), "data": data}
-
+    return {"count": len(data), "data": data} 
 # ---------------------------
 # FACTS
 # ---------------------------
-@app.get("/event")
+@app.get("/events")
 def get_events():
     query = "SELECT * FROM gold.fact_event;"
     data = execute_query(query)
@@ -124,7 +123,7 @@ def get_events_by_location(site_id: str):
 
 @app.get("/locations/city/{city_id}")
 def get_locations_by_city(city_id: str):
-    query = "SELECT * FROM gold.dim_location WHERE city_id = :city_id;"
+    query = "SELECT * FROM gold.dim_site WHERE city_id = :city_id;"
     data = execute_query(query, {"city_id": city_id})
     return {"count": len(data), "data": data}
 
