@@ -100,7 +100,7 @@ def get_event_media_flat():
     data = execute_query(query)
     return {"count": len(data), "data": data}
 
-@app.get("/event_full_flat")
+@app.get("/event")
 def get_event_full_flat():
     query = "SELECT * FROM gold.event_full_flat;"
     data = execute_query(query)
